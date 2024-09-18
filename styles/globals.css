@@ -4,8 +4,11 @@
   /*Background*/
   --primary-background: #faf8ef;
   --secondary-background: #bbada0;
-  --primary-text-color: #776e62;
   --cell-background: #cac1b5;
+  --tile-background: #eee4da;
+
+  /*Colors */
+  --primary-text-color: #776e62;
 }
 
 body {
