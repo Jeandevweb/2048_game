@@ -4,7 +4,7 @@
 
 .grid {
   background-color: var(--secondary-background);
-  border: var(--pixel-size) solid var(__secondary-background);
+  border: var(--pixel-size) solid var(--secondary-background);
   border-radius: calc(var(--pixel-size) * 0.75);
   display: flex;
   flex-wrap: wrap;
