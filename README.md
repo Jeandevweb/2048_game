@@ -4,7 +4,7 @@ Ceci est un clone entièrement fonctionnel du célèbre jeu 2048, construit avec
 
 <img src="2048.gif" />
 
-## [Play 2048 💥]()
+## [Play 2048 💥](https://2048-game-type.netlify.app/)
 
 ## Features
 
