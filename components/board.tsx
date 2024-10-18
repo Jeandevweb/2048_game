@@ -1,69 +1,97 @@
-import styles from "@/styles/board.module.css";
-import Tile from "./Tile";
-import { useEffect, useReducer, useRef } from "react";
-import gameReducer, { initialState } from "@/reducers/game-reducer";
+import { useCallback, useContext, useEffect, useRef } from "react";
 import { Tile as TileModel } from "@/models/tile";
+import styles from "@/styles/board.module.css";
+import Tile from "@/components/Tile";
+import { GameContext } from "@/context/game-context";
+import MobileSwiper, { SwipeInput } from "./mobile-swiper";
+import Splash from "./splash";
 
 export default function Board() {
-  const [gameState, dispatch] = useReducer(gameReducer, initialState);
+  const { getTiles, moveTiles, startGame, status } = useContext(GameContext);
   const initialized = useRef(false);
 
-  const handleKeyDown = (event: KeyboardEvent) => {
-    event.preventDefault();
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      // disables page scrolling with keyboard arrows
+      e.preventDefault();
 
-    switch (event.code) {
-      case "ArrowUp":
-        dispatch({ type: "move_up" });
-        break;
-      case "ArrowDown":
-        dispatch({ type: "move_down" });
-        break;
-      case "ArrowLeft":
-        dispatch({ type: "move_left" });
-        break;
-      case "ArrowRight":
-        dispatch({ type: "move_right" });
-        break;
-    }
-  };
+      switch (e.code) {
+        case "ArrowUp":
+          moveTiles("move_up");
+          break;
+        case "ArrowDown":
+          moveTiles("move_down");
+          break;
+        case "ArrowLeft":
+          moveTiles("move_left");
+          break;
+        case "ArrowRight":
+          moveTiles("move_right");
+          break;
+      }
+    },
+    [moveTiles],
+  );
+
+  const handleSwipe = useCallback(
+    ({ deltaX, deltaY }: SwipeInput) => {
+      if (Math.abs(deltaX) > Math.abs(deltaY)) {
+        if (deltaX > 0) {
+          moveTiles("move_right");
+        } else {
+          moveTiles("move_left");
+        }
+      } else {
+        if (deltaY > 0) {
+          moveTiles("move_down");
+        } else {
+          moveTiles("move_up");
+        }
+      }
+    },
+    [moveTiles],
+  );
 
   const renderGrid = () => {
     const cells: JSX.Element[] = [];
-    const totalCellCount = 16;
+    const totalCellsCount = 16;
 
-    for (let i = 0; i < totalCellCount; i++) {
-      cells.push(<div className={styles.cell} key={i} />);
+    for (let index = 0; index < totalCellsCount; index += 1) {
+      cells.push(<div className={styles.cell} key={index} />);
     }
+
     return cells;
   };
 
   const renderTiles = () => {
-    return Object.values(gameState.tiles).map(
-      (tile: TileModel, index: number) => {
-        return <Tile key={index} {...tile} />;
-      },
-    );
+    return getTiles().map((tile: TileModel) => (
+      <Tile key={`${tile.id}`} {...tile} />
+    ));
   };
 
   useEffect(() => {
     if (initialized.current === false) {
-      dispatch({ type: "create_tile", tile: { position: [0, 1], value: 2 } });
-      dispatch({ type: "create_tile", tile: { position: [0, 2], value: 2 } });
+      startGame();
       initialized.current = true;
     }
-  }, []);
+  }, [startGame]);
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
+
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, []);
+  }, [handleKeyDown]);
 
   return (
-    <div className={styles.board}>
-      <div className={styles.tiles}>{renderTiles()}</div>
-      <div className={styles.grid}>{renderGrid()}</div>
-    </div>
+    <MobileSwiper onSwipe={handleSwipe}>
+      <div className={styles.board}>
+        {status === "won" && <Splash heading="You won!" type="won" />}
+        {status === "lost" && <Splash heading="You lost!" />}
+        <div className={styles.tiles}>{renderTiles()}</div>
+        <div className={styles.grid}>{renderGrid()}</div>
+      </div>
+    </MobileSwiper>
   );
 }
